@@ -17,7 +17,31 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <style>
+
+      <!-- 🔥 FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2cTDl6cWYXr66dUKn6n5VEiVvfB5bOBk",
+    authDomain: "bhimmajhi-573d8.firebaseapp.com",
+    projectId: "bhimmajhi-573d8",
+    storageBucket: "bhimmajhi-573d8.firebasestorage.app",
+    messagingSenderId: "859390699596",
+    appId: "1:859390699596:web:84b05116d41e0a0fc6ece9"
+  };
+
+  // Firebase start
+  const app = initializeApp(firebaseConfig);
+
+  // Firebase Authentication
+  const auth = getAuth(app);
+
+  console.log("🔥 Firebase Connected Successfully!");
+</script>
+
+<style>
         * {
             margin: 0;
             padding: 0;
