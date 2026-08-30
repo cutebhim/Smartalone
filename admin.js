@@ -18,24 +18,32 @@ import { firebaseConfig } from "./firebase-config.js";
 import { cloudinaryConfig } from "./cloudinary-config.js";
 
 
-// ===============================
+// ========================================
 // FIREBASE
-// ===============================
+// ========================================
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
 
-// ===============================
+// ========================================
 // ELEMENTS
-// ===============================
+// ========================================
 
-const loginBox = document.getElementById("loginBox");
-const uploadBox = document.getElementById("uploadBox");
+const loginBox =
+  document.getElementById("loginBox");
 
-const loginMsg = document.getElementById("loginMsg");
-const status = document.getElementById("status");
+const uploadBox =
+  document.getElementById("uploadBox");
+
+const loginMsg =
+  document.getElementById("loginMsg");
+
+const status =
+  document.getElementById("status");
 
 const progressBar =
   document.getElementById("progressBar");
@@ -50,28 +58,38 @@ const uploadBtn =
   document.getElementById("uploadBtn");
 
 
-// ===============================
+// ========================================
 // LOGIN
-// ===============================
+// ========================================
 
 document
   .getElementById("loginBtn")
   .addEventListener("click", async () => {
 
     const email =
-      document.getElementById("email").value.trim();
+      document
+        .getElementById("email")
+        .value
+        .trim();
 
     const password =
-      document.getElementById("password").value;
+      document
+        .getElementById("password")
+        .value;
+
 
     if (!email || !password) {
+
       loginMsg.textContent =
         "Email aur password bharo.";
+
       return;
     }
 
+
     loginMsg.textContent =
       "Login ho raha hai...";
+
 
     try {
 
@@ -88,35 +106,36 @@ document
       console.error(error);
 
       loginMsg.textContent =
-        "Login failed: " + error.message;
-
+        "Login failed: " +
+        error.message;
     }
 
   });
 
 
-// ===============================
+// ========================================
 // LOGOUT
-// ===============================
+// ========================================
 
 document
   .getElementById("logoutBtn")
-  .addEventListener("click", () => {
+  .addEventListener("click", async () => {
 
-    signOut(auth);
+    await signOut(auth);
 
   });
 
 
-// ===============================
+// ========================================
 // AUTH STATE
-// ===============================
+// ========================================
 
 onAuthStateChanged(auth, user => {
 
   if (user) {
 
     loginBox.hidden = true;
+
     uploadBox.hidden = false;
 
     userEmail.textContent =
@@ -125,6 +144,7 @@ onAuthStateChanged(auth, user => {
   } else {
 
     loginBox.hidden = false;
+
     uploadBox.hidden = true;
 
   }
@@ -132,452 +152,489 @@ onAuthStateChanged(auth, user => {
 });
 
 
-// ===============================
-// CLOUDINARY UPLOAD
-// ===============================
+// ========================================
+// PROGRESS RESET
+// ========================================
 
-uploadBtn.addEventListener("click", async () => {
+function resetProgress() {
 
-  const user = auth.currentUser;
+  progressBar.style.width =
+    "0%";
 
-  const fileInput =
-    document.getElementById("media");
+  progressPercent.textContent =
+    "0%";
 
-  const file =
-    fileInput.files[0];
-
-  const title =
-    document.getElementById("title")
-      .value
-      .trim() || "New Frame";
-
-  const tag =
-    document.getElementById("tag")
-      .value
-      .trim() || "#smartalone";
+}
 
 
-  // -------------------------------
-  // LOGIN
-  // -------------------------------
+// ========================================
+// PROGRESS
+// ========================================
 
-  if (!user) {
+function setProgress(percent) {
+
+  const value =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(percent)
+      )
+    );
+
+
+  progressBar.style.width =
+    `${value}%`;
+
+
+  progressPercent.textContent =
+    `${value}%`;
+
+}
+
+
+// ========================================
+// CLOUDINARY WIDGET
+// ========================================
+
+let uploadWidget = null;
+
+
+function createUploadWidget() {
+
+  if (!window.cloudinary) {
 
     status.textContent =
-      "❌ Pehle login karo.";
+      "❌ Cloudinary Widget load nahi hua.";
 
-    return;
+    return null;
   }
 
 
-  // -------------------------------
-  // FILE
-  // -------------------------------
+  const widget =
+    window.cloudinary.createUploadWidget(
 
-  if (!file) {
+      {
 
-    status.textContent =
-      "❌ Photo ya video select karo.";
+        cloudName:
+          cloudinaryConfig.cloudName,
 
-    return;
-  }
-
-
-  const isImage =
-    file.type.startsWith("image/");
-
-  const isVideo =
-    file.type.startsWith("video/");
+        uploadPreset:
+          cloudinaryConfig.uploadPreset,
 
 
-  if (!isImage && !isVideo) {
-
-    status.textContent =
-      "❌ Sirf image ya video allowed hai.";
-
-    return;
-  }
+        sources: [
+          "local"
+        ],
 
 
-  // -------------------------------
-  // SIZE
-  // -------------------------------
-
-  const maxSize =
-    isVideo
-      ? 100 * 1024 * 1024
-      : 15 * 1024 * 1024;
+        multiple: false,
 
 
-  if (file.size > maxSize) {
-
-    status.textContent =
-      isVideo
-        ? "❌ Video 100 MB se chhota rakho."
-        : "❌ Photo 15 MB se chhota rakho.";
-
-    return;
-  }
+        resourceType:
+          "auto",
 
 
-  // -------------------------------
-  // RESET
-  // -------------------------------
+        clientAllowedFormats: [
+          "jpg",
+          "jpeg",
+          "png",
+          "webp",
+          "gif",
+          "mp4",
+          "webm",
+          "mov",
+          "avi",
+          "mkv"
+        ],
 
-  progressBar.style.width = "0%";
-  progressPercent.textContent = "0%";
 
-  status.textContent =
-    "Cloudinary se connection ho raha hai...";
+        maxFileSize:
+          100 * 1024 * 1024,
 
-  uploadBtn.disabled = true;
 
+        showAdvancedOptions:
+          false,
+
+
+        cropping:
+          false,
+
+
+        showSkipCropButton:
+          false,
+
+
+        folder:
+          "smartalone/posts",
+
+
+        styles: {
+
+          palette: {
+
+            window:
+              "#ffffff",
+
+            windowBorder:
+              "#dddddd",
+
+            tabIcon:
+              "#111111",
+
+            menuIcons:
+              "#555555",
+
+            textDark:
+              "#111111",
+
+            textLight:
+              "#ffffff",
+
+            link:
+              "#111111",
+
+            action:
+              "#111111",
+
+            inactiveTabIcon:
+              "#999999",
+
+            error:
+              "#d32f2f",
+
+            inProgress:
+              "#555555",
+
+            complete:
+              "#222222",
+
+            sourceBg:
+              "#f5f5f5"
+
+          }
+
+        }
+
+      },
+
+
+      (error, result) => {
+
+
+        // ==================================
+        // ERROR
+        // ==================================
+
+        if (error) {
+
+          console.error(
+            "Cloudinary error:",
+            error
+          );
+
+
+          status.textContent =
+            "❌ Upload error: " +
+            (
+              error.message ||
+              "Unknown error"
+            );
+
+
+          setProgress(0);
+
+          uploadBtn.disabled = false;
+
+          return;
+        }
+
+
+        if (!result) {
+          return;
+        }
+
+
+        // ==================================
+        // UPLOAD START
+        // ==================================
+
+        if (
+          result.event ===
+          "queues-start"
+        ) {
+
+          resetProgress();
+
+          setProgress(1);
+
+          status.textContent =
+            "Upload start ho gaya...";
+
+          return;
+        }
+
+
+        // ==================================
+        // PROGRESS
+        // ==================================
+
+        if (
+          result.event ===
+          "queues-end"
+        ) {
+
+          setProgress(100);
+
+          status.textContent =
+            "Upload complete!";
+
+          return;
+        }
+
+
+        // ==================================
+        // SUCCESS
+        // ==================================
+
+        if (
+          result.event ===
+          "success"
+        ) {
+
+          const info =
+            result.info;
+
+
+          console.log(
+            "Cloudinary uploaded:",
+            info
+          );
+
+
+          savePostToFirestore(
+            info
+          );
+
+        }
+
+      }
+
+    );
+
+
+  return widget;
+}
+
+
+// ========================================
+// SAVE POST
+// ========================================
+
+async function savePostToFirestore(info) {
 
   try {
 
-    // =================================
-    // IMAGE / VIDEO RESOURCE TYPE
-    // =================================
+    const user =
+      auth.currentUser;
 
-    const resourceType =
-      isVideo ? "video" : "image";
 
-
-    // =================================
-    // CLOUDINARY UPLOAD URL
-    // =================================
-
-    const cloudinaryUrl =
-      `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/${resourceType}/upload`;
-
-
-    console.log("Cloudinary URL:", cloudinaryUrl);
-    console.log("Cloud name:", cloudinaryConfig.cloudName);
-    console.log("Upload preset:", cloudinaryConfig.uploadPreset);
-    console.log("File:", file.name);
-    console.log("File type:", file.type);
-    console.log("File size:", file.size);
-
-
-    // =================================
-    // FORM DATA
-    // =================================
-
-    const formData = new FormData();
-
-    formData.append(
-      "file",
-      file
-    );
-
-    formData.append(
-      "upload_preset",
-      cloudinaryConfig.uploadPreset
-    );
-
-
-    // =================================
-    // XHR
-    // =================================
-
-    const result =
-      await new Promise((resolve, reject) => {
-
-        const xhr =
-          new XMLHttpRequest();
-
-
-        xhr.open(
-          "POST",
-          cloudinaryUrl,
-          true
-        );
-
-
-        // -----------------------------
-        // REQUEST START
-        // -----------------------------
-
-        xhr.onloadstart = () => {
-
-          status.textContent =
-            "Upload start ho gaya... 0%";
-
-        };
-
-
-        // -----------------------------
-        // PROGRESS
-        // -----------------------------
-
-        xhr.upload.addEventListener(
-          "progress",
-          event => {
-
-            if (!event.lengthComputable) {
-
-              status.textContent =
-                "Upload ho raha hai...";
-
-              return;
-            }
-
-
-            const percent =
-              Math.round(
-                (event.loaded / event.total) * 100
-              );
-
-
-            progressBar.style.width =
-              `${percent}%`;
-
-            progressPercent.textContent =
-              `${percent}%`;
-
-            status.textContent =
-              `Upload ho raha hai... ${percent}%`;
-
-          }
-        );
-
-
-        // -----------------------------
-        // COMPLETE
-        // -----------------------------
-
-        xhr.onload = () => {
-
-          console.log(
-            "Cloudinary response:",
-            xhr.responseText
-          );
-
-
-          if (
-            xhr.status >= 200 &&
-            xhr.status < 300
-          ) {
-
-            try {
-
-              const data =
-                JSON.parse(
-                  xhr.responseText
-                );
-
-              resolve(data);
-
-            } catch (error) {
-
-              reject(
-                new Error(
-                  "Cloudinary response invalid hai."
-                )
-              );
-
-            }
-
-          } else {
-
-            let message =
-              `Cloudinary error (${xhr.status})`;
-
-
-            try {
-
-              const data =
-                JSON.parse(
-                  xhr.responseText
-                );
-
-
-              if (
-                data.error &&
-                data.error.message
-              ) {
-
-                message =
-                  data.error.message;
-
-              }
-
-            } catch (e) {}
-
-
-            reject(
-              new Error(message)
-            );
-
-          }
-
-        };
-
-
-        // -----------------------------
-        // NETWORK ERROR
-        // -----------------------------
-
-        xhr.onerror = () => {
-
-          reject(
-            new Error(
-              "Network error. Internet connection check karo."
-            )
-          );
-
-        };
-
-
-        // -----------------------------
-        // ABORT
-        // -----------------------------
-
-        xhr.onabort = () => {
-
-          reject(
-            new Error(
-              "Upload cancel ho gaya."
-            )
-          );
-
-        };
-
-
-        // -----------------------------
-        // TIMEOUT
-        // -----------------------------
-
-        xhr.timeout = 120000;
-
-        xhr.ontimeout = () => {
-
-          reject(
-            new Error(
-              "Upload timeout ho gaya. Internet ya Cloudinary check karo."
-            )
-          );
-
-        };
-
-
-        // -----------------------------
-        // SEND
-        // -----------------------------
-
-        status.textContent =
-          "Cloudinary ko file bheji ja rahi hai...";
-
-        xhr.send(formData);
-
-      });
-
-
-    // =================================
-    // CLOUDINARY URL
-    // =================================
-
-    if (!result.secure_url) {
+    if (!user) {
 
       throw new Error(
-        "Cloudinary ne media URL nahi diya."
+        "User login nahi hai."
       );
 
     }
 
 
+    const title =
+      document
+        .getElementById("title")
+        .value
+        .trim() ||
+      "New Frame";
+
+
+    const tag =
+      document
+        .getElementById("tag")
+        .value
+        .trim() ||
+      "#smartalone";
+
+
+    const resourceType =
+      info.resource_type || "image";
+
+
+    const mediaType =
+      resourceType === "video"
+        ? "video"
+        : "image";
+
+
     const mediaUrl =
-      result.secure_url;
+      info.secure_url;
 
 
-    console.log(
-      "Media URL:",
-      mediaUrl
-    );
+    if (!mediaUrl) {
 
+      throw new Error(
+        "Cloudinary URL nahi mila."
+      );
 
-    // =================================
-    // FIRESTORE
-    // =================================
+    }
+
 
     status.textContent =
-      "Upload complete. Post save ho raha hai...";
+      "Post database me save ho raha hai...";
 
+
+    // ==================================
+    // FIRESTORE
+    // ==================================
 
     await addDoc(
       collection(db, "posts"),
       {
 
-        title: title,
+        title:
 
-        tag: tag,
+          title,
 
-        mediaUrl: mediaUrl,
+        tag:
+
+          tag,
+
+        mediaUrl:
+
+          mediaUrl,
 
         mediaType:
-          isVideo
-            ? "video"
-            : "image",
+
+          mediaType,
 
         cloudinaryPublicId:
-          result.public_id || "",
+
+          info.public_id || "",
+
+        cloudinaryResourceType:
+
+          resourceType,
+
+        format:
+
+          info.format || "",
 
         createdAt:
+
           serverTimestamp(),
 
         createdBy:
+
           user.uid
 
       }
     );
 
 
-    // =================================
-    // SUCCESS
-    // =================================
+    // ==================================
+    // DONE
+    // ==================================
 
-    progressBar.style.width =
-      "100%";
+    setProgress(100);
 
-    progressPercent.textContent =
-      "100%";
 
     status.textContent =
-      "✅ Upload complete! Post live ho gaya.";
+      "✅ Post live ho gaya!";
 
 
-    // Clear fields
+    document
+      .getElementById("title")
+      .value = "";
 
-    fileInput.value = "";
 
-    document.getElementById("title").value = "";
+    document
+      .getElementById("tag")
+      .value = "";
 
-    document.getElementById("tag").value = "";
+
+    uploadBtn.disabled =
+      false;
 
 
   } catch (error) {
 
     console.error(
-      "UPLOAD ERROR:",
+      "Firestore error:",
       error
     );
 
 
-    progressBar.style.width =
-      "0%";
-
-
-    progressPercent.textContent =
-      "0%";
-
-
     status.textContent =
-      "❌ " + error.message;
+      "❌ Post save nahi hua: " +
+      error.message;
 
-  } finally {
 
-    uploadBtn.disabled = false;
+    uploadBtn.disabled =
+      false;
 
   }
 
-});
+}
+
+
+// ========================================
+// UPLOAD BUTTON
+// ========================================
+
+uploadBtn.addEventListener(
+  "click",
+  () => {
+
+    const user =
+      auth.currentUser;
+
+
+    if (!user) {
+
+      status.textContent =
+        "❌ Pehle login karo.";
+
+      return;
+    }
+
+
+    resetProgress();
+
+
+    status.textContent =
+      "Cloudinary upload window khul raha hai...";
+
+
+    uploadBtn.disabled =
+      true;
+
+
+    if (!uploadWidget) {
+
+      uploadWidget =
+        createUploadWidget();
+
+    }
+
+
+    if (!uploadWidget) {
+
+      uploadBtn.disabled =
+        false;
+
+      return;
+    }
+
+
+    uploadWidget.open();
+
+  }
+);
