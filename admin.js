@@ -29,7 +29,9 @@ const uploadBox = document.getElementById("uploadBox");
 const loginMsg = document.getElementById("loginMsg");
 const status = document.getElementById("status");
 const progressBar = document.getElementById("progressBar");
+const progressPercent = document.getElementById("progressPercent");
 const userEmail = document.getElementById("userEmail");
+const uploadBtn = document.getElementById("uploadBtn");
 
 document.getElementById("loginBtn").addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
@@ -41,6 +43,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   }
 
   loginMsg.textContent = "Login ho raha hai...";
+
   try {
     await signInWithEmailAndPassword(auth, email, password);
     loginMsg.textContent = "";
@@ -87,8 +90,8 @@ document.getElementById("uploadBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Practical browser-side limits. Increase if you intentionally need larger files.
   const maxSize = isVideo ? 100 * 1024 * 1024 : 15 * 1024 * 1024;
+
   if (file.size > maxSize) {
     status.textContent = isVideo
       ? "Video 100 MB se chhota rakho."
@@ -101,7 +104,9 @@ document.getElementById("uploadBtn").addEventListener("click", async () => {
   const storageRef = ref(storage, filePath);
 
   progressBar.style.width = "0%";
+  progressPercent.textContent = "0%";
   status.textContent = "Upload ho raha hai...";
+  uploadBtn.disabled = true;
 
   try {
     const uploadTask = uploadBytesResumable(storageRef, file, {
@@ -111,37 +116,58 @@ document.getElementById("uploadBtn").addEventListener("click", async () => {
       }
     });
 
-    uploadTask.on("state_changed",
+    uploadTask.on(
+      "state_changed",
+
       snapshot => {
-        const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        progressBar.style.width = `${percent}%`;
+        const percent =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+        const roundedPercent = Math.round(percent);
+
+        progressBar.style.width = `${roundedPercent}%`;
+        progressPercent.textContent = `${roundedPercent}%`;
+        status.textContent = `Upload ho raha hai... ${roundedPercent}%`;
       },
+
       error => {
         console.error(error);
         status.textContent = "Upload failed: " + error.message;
+        uploadBtn.disabled = false;
       },
+
       async () => {
-        const mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
+        try {
+          const mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
 
-        await addDoc(collection(db, "posts"), {
-          title,
-          tag,
-          mediaUrl,
-          mediaType: isVideo ? "video" : "image",
-          storagePath: filePath,
-          createdAt: serverTimestamp(),
-          createdBy: user.uid
-        });
+          await addDoc(collection(db, "posts"), {
+            title,
+            tag,
+            mediaUrl,
+            mediaType: isVideo ? "video" : "image",
+            storagePath: filePath,
+            createdAt: serverTimestamp(),
+            createdBy: user.uid
+          });
 
-        progressBar.style.width = "100%";
-        status.textContent = "✅ Post live ho gaya!";
-        document.getElementById("media").value = "";
-        document.getElementById("title").value = "";
-        document.getElementById("tag").value = "";
+          progressBar.style.width = "100%";
+          progressPercent.textContent = "100%";
+          status.textContent = "✅ Post live ho gaya!";
+
+          document.getElementById("media").value = "";
+          document.getElementById("title").value = "";
+          document.getElementById("tag").value = "";
+        } catch (error) {
+          console.error(error);
+          status.textContent = "Publish failed: " + error.message;
+        } finally {
+          uploadBtn.disabled = false;
+        }
       }
     );
   } catch (error) {
     console.error(error);
     status.textContent = "Error: " + error.message;
+    uploadBtn.disabled = false;
   }
 });
