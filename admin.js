@@ -253,7 +253,7 @@ uploadBtn.addEventListener(
       // ==================================
 
       const cloudinaryUrl =
-        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/auto/upload`;
+  `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
 
 
       // ==================================
