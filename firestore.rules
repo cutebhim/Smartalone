@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /posts/{postId} {
+      // Anyone can see public posts.
+      allow read: if true;
+
+      // Only the signed-in admin account may create/update/delete posts.
+      allow create, update, delete:
+        if request.auth != null
+        && request.auth.token.email == "cutenrml@gmail.com";
+    }
+  }
+}
