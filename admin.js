@@ -19,18 +19,16 @@ import { cloudinaryConfig } from "./cloudinary-config.js";
 
 
 // ===============================
-// Firebase
+// FIREBASE
 // ===============================
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
 
 // ===============================
-// Elements
+// ELEMENTS
 // ===============================
 
 const loginBox = document.getElementById("loginBox");
@@ -61,19 +59,14 @@ document
   .addEventListener("click", async () => {
 
     const email =
-      document.getElementById("email")
-        .value
-        .trim();
+      document.getElementById("email").value.trim();
 
     const password =
-      document.getElementById("password")
-        .value;
+      document.getElementById("password").value;
 
     if (!email || !password) {
-
       loginMsg.textContent =
         "Email aur password bharo.";
-
       return;
     }
 
@@ -95,8 +88,8 @@ document
       console.error(error);
 
       loginMsg.textContent =
-        "Login failed: " +
-        error.message;
+        "Login failed: " + error.message;
+
     }
 
   });
@@ -124,7 +117,6 @@ onAuthStateChanged(auth, user => {
   if (user) {
 
     loginBox.hidden = true;
-
     uploadBox.hidden = false;
 
     userEmail.textContent =
@@ -133,7 +125,6 @@ onAuthStateChanged(auth, user => {
   } else {
 
     loginBox.hidden = false;
-
     uploadBox.hidden = true;
 
   }
@@ -142,360 +133,451 @@ onAuthStateChanged(auth, user => {
 
 
 // ===============================
-// UPLOAD
+// CLOUDINARY UPLOAD
 // ===============================
 
-uploadBtn.addEventListener(
-  "click",
-  async () => {
+uploadBtn.addEventListener("click", async () => {
 
-    const user = auth.currentUser;
+  const user = auth.currentUser;
 
-    const fileInput =
-      document.getElementById("media");
+  const fileInput =
+    document.getElementById("media");
 
-    const file =
-      fileInput.files[0];
+  const file =
+    fileInput.files[0];
 
-    const title =
-      document.getElementById("title")
-        .value
-        .trim() || "New Frame";
+  const title =
+    document.getElementById("title")
+      .value
+      .trim() || "New Frame";
 
-    const tag =
-      document.getElementById("tag")
-        .value
-        .trim() || "#smartalone";
+  const tag =
+    document.getElementById("tag")
+      .value
+      .trim() || "#smartalone";
 
 
-    // ---------------------------
-    // LOGIN CHECK
-    // ---------------------------
+  // -------------------------------
+  // LOGIN
+  // -------------------------------
 
-    if (!user) {
-
-      status.textContent =
-        "Pehle login karo.";
-
-      return;
-    }
-
-
-    // ---------------------------
-    // FILE CHECK
-    // ---------------------------
-
-    if (!file) {
-
-      status.textContent =
-        "Photo ya video select karo.";
-
-      return;
-    }
-
-
-    const isImage =
-      file.type.startsWith("image/");
-
-    const isVideo =
-      file.type.startsWith("video/");
-
-
-    if (!isImage && !isVideo) {
-
-      status.textContent =
-        "Sirf image ya video allowed hai.";
-
-      return;
-    }
-
-
-    // ---------------------------
-    // SIZE LIMIT
-    // ---------------------------
-
-    const maxSize =
-      isVideo
-        ? 100 * 1024 * 1024
-        : 15 * 1024 * 1024;
-
-
-    if (file.size > maxSize) {
-
-      status.textContent =
-        isVideo
-          ? "Video 100 MB se chhota rakho."
-          : "Photo 15 MB se chhota rakho.";
-
-      return;
-    }
-
-
-    // ---------------------------
-    // RESET PROGRESS
-    // ---------------------------
-
-    progressBar.style.width = "0%";
-
-    progressPercent.textContent = "0%";
+  if (!user) {
 
     status.textContent =
-      "Cloudinary upload shuru ho raha hai...";
+      "❌ Pehle login karo.";
+
+    return;
+  }
 
 
-    uploadBtn.disabled = true;
+  // -------------------------------
+  // FILE
+  // -------------------------------
+
+  if (!file) {
+
+    status.textContent =
+      "❌ Photo ya video select karo.";
+
+    return;
+  }
 
 
-    try {
+  const isImage =
+    file.type.startsWith("image/");
 
-      // ==================================
-      // CLOUDINARY URL
-      // ==================================
-
-      const cloudinaryUrl =
-  `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`;
+  const isVideo =
+    file.type.startsWith("video/");
 
 
-      // ==================================
-      // FORM DATA
-      // ==================================
+  if (!isImage && !isVideo) {
 
-      const formData =
-        new FormData();
+    status.textContent =
+      "❌ Sirf image ya video allowed hai.";
 
-      formData.append(
-        "file",
-        file
-      );
-
-      formData.append(
-        "upload_preset",
-        cloudinaryConfig.uploadPreset
-      );
+    return;
+  }
 
 
-      // ==================================
-      // XMLHttpRequest
-      // LIVE PROGRESS
-      // ==================================
+  // -------------------------------
+  // SIZE
+  // -------------------------------
 
-      const result =
-        await new Promise(
-          (resolve, reject) => {
-
-            const xhr =
-              new XMLHttpRequest();
+  const maxSize =
+    isVideo
+      ? 100 * 1024 * 1024
+      : 15 * 1024 * 1024;
 
 
-            xhr.open(
-              "POST",
-              cloudinaryUrl
-            );
+  if (file.size > maxSize) {
+
+    status.textContent =
+      isVideo
+        ? "❌ Video 100 MB se chhota rakho."
+        : "❌ Photo 15 MB se chhota rakho.";
+
+    return;
+  }
 
 
-            // ----------------------------
-            // PROGRESS
-            // ----------------------------
+  // -------------------------------
+  // RESET
+  // -------------------------------
 
-            xhr.upload.onprogress =
-              event => {
+  progressBar.style.width = "0%";
+  progressPercent.textContent = "0%";
 
-                if (!event.lengthComputable) {
-                  return;
-                }
+  status.textContent =
+    "Cloudinary se connection ho raha hai...";
 
-                const percent =
-                  Math.round(
-                    (event.loaded /
-                      event.total) * 100
-                  );
+  uploadBtn.disabled = true;
 
 
-                progressBar.style.width =
-                  `${percent}%`;
+  try {
+
+    // =================================
+    // IMAGE / VIDEO RESOURCE TYPE
+    // =================================
+
+    const resourceType =
+      isVideo ? "video" : "image";
 
 
-                progressPercent.textContent =
-                  `${percent}%`;
+    // =================================
+    // CLOUDINARY UPLOAD URL
+    // =================================
+
+    const cloudinaryUrl =
+      `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/${resourceType}/upload`;
 
 
-                status.textContent =
-                  `Upload ho raha hai... ${percent}%`;
-
-              };
-
-
-            // ----------------------------
-            // SUCCESS / ERROR
-            // ----------------------------
-
-            xhr.onload = () => {
-
-              if (
-                xhr.status >= 200 &&
-                xhr.status < 300
-              ) {
-
-                try {
-
-                  const data =
-                    JSON.parse(xhr.responseText);
-
-                  resolve(data);
-
-                } catch (error) {
-
-                  reject(
-                    new Error(
-                      "Cloudinary response samajh nahi aaya."
-                    )
-                  );
-
-                }
-
-              } else {
-
-                let message =
-                  "Cloudinary upload failed.";
-
-                try {
-
-                  const data =
-                    JSON.parse(
-                      xhr.responseText
-                    );
-
-                  if (
-                    data.error &&
-                    data.error.message
-                  ) {
-
-                    message =
-                      data.error.message;
-
-                  }
-
-                } catch (e) {
-                  // Ignore JSON parse error
-                }
-
-                reject(
-                  new Error(message)
-                );
-
-              }
-
-            };
+    console.log("Cloudinary URL:", cloudinaryUrl);
+    console.log("Cloud name:", cloudinaryConfig.cloudName);
+    console.log("Upload preset:", cloudinaryConfig.uploadPreset);
+    console.log("File:", file.name);
+    console.log("File type:", file.type);
+    console.log("File size:", file.size);
 
 
-            xhr.onerror = () => {
+    // =================================
+    // FORM DATA
+    // =================================
 
-              reject(
-                new Error(
-                  "Network error. Internet connection check karo."
-                )
+    const formData = new FormData();
+
+    formData.append(
+      "file",
+      file
+    );
+
+    formData.append(
+      "upload_preset",
+      cloudinaryConfig.uploadPreset
+    );
+
+
+    // =================================
+    // XHR
+    // =================================
+
+    const result =
+      await new Promise((resolve, reject) => {
+
+        const xhr =
+          new XMLHttpRequest();
+
+
+        xhr.open(
+          "POST",
+          cloudinaryUrl,
+          true
+        );
+
+
+        // -----------------------------
+        // REQUEST START
+        // -----------------------------
+
+        xhr.onloadstart = () => {
+
+          status.textContent =
+            "Upload start ho gaya... 0%";
+
+        };
+
+
+        // -----------------------------
+        // PROGRESS
+        // -----------------------------
+
+        xhr.upload.addEventListener(
+          "progress",
+          event => {
+
+            if (!event.lengthComputable) {
+
+              status.textContent =
+                "Upload ho raha hai...";
+
+              return;
+            }
+
+
+            const percent =
+              Math.round(
+                (event.loaded / event.total) * 100
               );
 
-            };
 
+            progressBar.style.width =
+              `${percent}%`;
 
-            xhr.onabort = () => {
+            progressPercent.textContent =
+              `${percent}%`;
 
-              reject(
-                new Error(
-                  "Upload cancel ho gaya."
-                )
-              );
-
-            };
-
-
-            xhr.send(formData);
+            status.textContent =
+              `Upload ho raha hai... ${percent}%`;
 
           }
         );
 
 
-      // ==================================
-      // CLOUDINARY URL
-      // ==================================
+        // -----------------------------
+        // COMPLETE
+        // -----------------------------
 
-      const mediaUrl =
-        result.secure_url;
+        xhr.onload = () => {
+
+          console.log(
+            "Cloudinary response:",
+            xhr.responseText
+          );
 
 
-      // ==================================
-      // FIRESTORE SAVE
-      // ==================================
+          if (
+            xhr.status >= 200 &&
+            xhr.status < 300
+          ) {
 
-      await addDoc(
-        collection(db, "posts"),
-        {
+            try {
 
-          title: title,
+              const data =
+                JSON.parse(
+                  xhr.responseText
+                );
 
-          tag: tag,
+              resolve(data);
 
-          mediaUrl: mediaUrl,
+            } catch (error) {
 
-          mediaType:
-            isVideo
-              ? "video"
-              : "image",
+              reject(
+                new Error(
+                  "Cloudinary response invalid hai."
+                )
+              );
 
-          cloudinaryPublicId:
-            result.public_id,
+            }
 
-          createdAt:
-            serverTimestamp(),
+          } else {
 
-          createdBy:
-            user.uid
+            let message =
+              `Cloudinary error (${xhr.status})`;
 
-        }
+
+            try {
+
+              const data =
+                JSON.parse(
+                  xhr.responseText
+                );
+
+
+              if (
+                data.error &&
+                data.error.message
+              ) {
+
+                message =
+                  data.error.message;
+
+              }
+
+            } catch (e) {}
+
+
+            reject(
+              new Error(message)
+            );
+
+          }
+
+        };
+
+
+        // -----------------------------
+        // NETWORK ERROR
+        // -----------------------------
+
+        xhr.onerror = () => {
+
+          reject(
+            new Error(
+              "Network error. Internet connection check karo."
+            )
+          );
+
+        };
+
+
+        // -----------------------------
+        // ABORT
+        // -----------------------------
+
+        xhr.onabort = () => {
+
+          reject(
+            new Error(
+              "Upload cancel ho gaya."
+            )
+          );
+
+        };
+
+
+        // -----------------------------
+        // TIMEOUT
+        // -----------------------------
+
+        xhr.timeout = 120000;
+
+        xhr.ontimeout = () => {
+
+          reject(
+            new Error(
+              "Upload timeout ho gaya. Internet ya Cloudinary check karo."
+            )
+          );
+
+        };
+
+
+        // -----------------------------
+        // SEND
+        // -----------------------------
+
+        status.textContent =
+          "Cloudinary ko file bheji ja rahi hai...";
+
+        xhr.send(formData);
+
+      });
+
+
+    // =================================
+    // CLOUDINARY URL
+    // =================================
+
+    if (!result.secure_url) {
+
+      throw new Error(
+        "Cloudinary ne media URL nahi diya."
       );
-
-
-      // ==================================
-      // COMPLETE
-      // ==================================
-
-      progressBar.style.width =
-        "100%";
-
-      progressPercent.textContent =
-        "100%";
-
-      status.textContent =
-        "✅ Upload complete! Post live ho gaya.";
-
-
-      // Clear fields
-
-      fileInput.value = "";
-
-      document.getElementById(
-        "title"
-      ).value = "";
-
-      document.getElementById(
-        "tag"
-      ).value = "";
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      status.textContent =
-        "❌ Upload failed: " +
-        error.message;
-
-    } finally {
-
-      uploadBtn.disabled = false;
 
     }
 
+
+    const mediaUrl =
+      result.secure_url;
+
+
+    console.log(
+      "Media URL:",
+      mediaUrl
+    );
+
+
+    // =================================
+    // FIRESTORE
+    // =================================
+
+    status.textContent =
+      "Upload complete. Post save ho raha hai...";
+
+
+    await addDoc(
+      collection(db, "posts"),
+      {
+
+        title: title,
+
+        tag: tag,
+
+        mediaUrl: mediaUrl,
+
+        mediaType:
+          isVideo
+            ? "video"
+            : "image",
+
+        cloudinaryPublicId:
+          result.public_id || "",
+
+        createdAt:
+          serverTimestamp(),
+
+        createdBy:
+          user.uid
+
+      }
+    );
+
+
+    // =================================
+    // SUCCESS
+    // =================================
+
+    progressBar.style.width =
+      "100%";
+
+    progressPercent.textContent =
+      "100%";
+
+    status.textContent =
+      "✅ Upload complete! Post live ho gaya.";
+
+
+    // Clear fields
+
+    fileInput.value = "";
+
+    document.getElementById("title").value = "";
+
+    document.getElementById("tag").value = "";
+
+
+  } catch (error) {
+
+    console.error(
+      "UPLOAD ERROR:",
+      error
+    );
+
+
+    progressBar.style.width =
+      "0%";
+
+
+    progressPercent.textContent =
+      "0%";
+
+
+    status.textContent =
+      "❌ " + error.message;
+
+  } finally {
+
+    uploadBtn.disabled = false;
+
   }
-);
+
+});
