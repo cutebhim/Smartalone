@@ -11,7 +11,12 @@ import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
@@ -56,6 +61,12 @@ const userEmail =
 
 const uploadBtn =
   document.getElementById("uploadBtn");
+
+const postsBox =
+  document.getElementById("postsBox");
+
+const postsList =
+  document.getElementById("postsList");
 
 
 // ========================================
@@ -138,8 +149,12 @@ onAuthStateChanged(auth, user => {
 
     uploadBox.hidden = false;
 
+    postsBox.hidden = false;
+
     userEmail.textContent =
       user.email || user.uid;
+
+    startPostsListener();
 
   } else {
 
@@ -147,9 +162,219 @@ onAuthStateChanged(auth, user => {
 
     uploadBox.hidden = true;
 
+    postsBox.hidden = true;
+
+    stopPostsListener();
+
   }
 
 });
+
+
+// ========================================
+// POSTS LIST
+// ========================================
+
+let unsubscribePosts = null;
+
+
+function escapeHTML(value = "") {
+
+  return String(value).replace(
+    /[&<>"']/g,
+    ch => (
+      {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[ch]
+    )
+  );
+
+}
+
+
+function renderPosts(snapshot) {
+
+  postsList.replaceChildren();
+
+
+  if (snapshot.empty) {
+
+    const empty =
+      document.createElement("p");
+
+    empty.className = "posts-empty";
+
+    empty.textContent =
+      "Abhi tak koi post nahi hai.";
+
+    postsList.appendChild(empty);
+
+    return;
+  }
+
+
+  snapshot.forEach(docSnap => {
+
+    const post = docSnap.data();
+
+    const postId = docSnap.id;
+
+
+    const item =
+      document.createElement("div");
+
+    item.className = "post-item";
+
+
+    const title =
+      escapeHTML(post.title || "New Frame");
+
+    const tag =
+      escapeHTML(post.tag || "#smartalone");
+
+    const thumbSrc =
+      post.mediaType === "video"
+        ? ""
+        : (post.mediaUrl || "");
+
+
+    item.innerHTML = `
+      ${
+        thumbSrc
+          ? `<img class="post-thumb" src="${thumbSrc}" alt="${title}">`
+          : `<div class="post-thumb"></div>`
+      }
+      <div class="post-info">
+        <div class="post-name">${title}</div>
+        <div class="post-tag">${tag}</div>
+      </div>
+      <button class="post-delete" type="button">
+        🗑 Delete
+      </button>
+    `;
+
+
+    const deleteBtn =
+      item.querySelector(".post-delete");
+
+    deleteBtn.addEventListener(
+      "click",
+      () => deletePost(postId, deleteBtn)
+    );
+
+
+    postsList.appendChild(item);
+
+  });
+
+}
+
+
+function startPostsListener() {
+
+  if (unsubscribePosts) {
+    return;
+  }
+
+
+  const postsQuery = query(
+    collection(db, "posts"),
+    orderBy("createdAt", "desc")
+  );
+
+
+  unsubscribePosts = onSnapshot(
+    postsQuery,
+    renderPosts,
+    error => {
+
+      console.error(
+        "Posts listener error:",
+        error
+      );
+
+      postsList.replaceChildren();
+
+      const errMsg =
+        document.createElement("p");
+
+      errMsg.className = "posts-empty";
+
+      errMsg.textContent =
+        "❌ Posts load nahi hue.";
+
+      postsList.appendChild(errMsg);
+
+    }
+  );
+
+}
+
+
+function stopPostsListener() {
+
+  if (unsubscribePosts) {
+
+    unsubscribePosts();
+
+    unsubscribePosts = null;
+
+  }
+
+  postsList.replaceChildren();
+
+}
+
+
+async function deletePost(postId, buttonEl) {
+
+  const confirmed =
+    window.confirm(
+      "Ye post delete karna hai? Ye action undo nahi ho sakta."
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  buttonEl.disabled = true;
+
+  buttonEl.textContent =
+    "Deleting...";
+
+
+  try {
+
+    await deleteDoc(
+      doc(db, "posts", postId)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Delete error:",
+      error
+    );
+
+    alert(
+      "❌ Delete nahi hua: " +
+      error.message
+    );
+
+    buttonEl.disabled = false;
+
+    buttonEl.textContent =
+      "🗑 Delete";
+
+  }
+
+}
 
 
 // ========================================
@@ -638,3 +863,4 @@ uploadBtn.addEventListener(
 
   }
 );
+        
