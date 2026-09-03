@@ -1,10 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+@font-face {
+    font-family: 'Destoria';
+    src: url('Destoria-Free.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Allura', cursive;
+    font-family: 'Destoria', cursive;
 }
 
 :root {
@@ -418,25 +424,27 @@ nav a:hover::before { width: 100%; }
 ::-webkit-scrollbar-thumb { background: #d5ccc4; border-radius: 20px; }
 ::-webkit-scrollbar-thumb:hover { background: #8b6df0; }
 
+/* ===== DESTORIA FONT — FULL WEBSITE ===== */
+html, body, button, input, textarea, select,
+header, nav, main, section, footer, article, aside,
+.logo, nav a, .banner-text, .banner-text h2, .banner-text .meta,
+.banner-tag, .section-header, .section-title, .section-sub,
+.gallery-card, .card-overlay, .card-overlay h3, .card-meta, .card-tag,
+.testimonial, .testimonial blockquote, .testimonial cite {
+    font-family: 'Destoria', cursive;
+}
 
-/* ===== DESTORIA-STYLE HANDWRITTEN TEXT ===== */
-/* Allura gives the website a flowing handwritten/script appearance.
-   Normal UI/body text stays Inter for readability. */
+/* Keep Font Awesome icons working normally. */
+.fas, .far, .fab, [class^="fa-"], [class*=" fa-"] {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+}
 
-.logo,
-.banner-text h2,
-.section-title,
-.card-overlay h3,
-.testimonial blockquote,
-.testimonial cite {
-    font-family: 'Allura', cursive;
+/* Destoria needs a little more size for clear reading. */
+.logo {
+    font-size: 2.7rem;
     font-weight: 400;
     letter-spacing: 0;
     text-transform: none;
-}
-
-.logo {
-    font-size: 2.5rem;
 }
 
 .logo span {
@@ -446,10 +454,18 @@ nav a:hover::before { width: 100%; }
     color: #2c2824;
 }
 
-.banner-text h2 {
-    font-size: 5rem;
-    line-height: 1;
+nav a {
+    font-size: 1.35rem;
+    font-weight: 400;
     letter-spacing: 0;
+    text-transform: none;
+}
+
+.banner-text h2 {
+    font-size: 5.2rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
 }
 
 .banner-text h2 strong {
@@ -459,9 +475,24 @@ nav a:hover::before { width: 100%; }
     color: #ffffff;
 }
 
-.section-title {
-    font-size: 3.4rem;
+.banner-text .meta {
+    font-size: 1.3rem;
+    letter-spacing: 0;
+    text-transform: none;
     font-weight: 400;
+}
+
+.banner-tag {
+    font-size: 1.25rem;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 400;
+}
+
+.section-title {
+    font-size: 3.5rem;
+    font-weight: 400;
+    letter-spacing: 0;
 }
 
 .section-title strong {
@@ -471,104 +502,68 @@ nav a:hover::before { width: 100%; }
     color: #8b6df0;
 }
 
-.card-overlay h3 {
-    font-size: 2.2rem;
-    line-height: 1.05;
-    font-weight: 400;
-}
-
-.testimonial blockquote {
-    font-size: 2.6rem;
-    font-weight: 400;
-    line-height: 1.25;
-}
-
-.testimonial cite {
-    font-size: 1.7rem;
-    letter-spacing: 0;
-}
-
-@media (max-width: 820px) {
-    .logo { font-size: 2.2rem; }
-    .banner-text h2 { font-size: 3.8rem; }
-    .section-title { font-size: 2.8rem; }
-    .card-overlay h3 { font-size: 1.9rem; }
-    .testimonial blockquote { font-size: 2rem; }
-    .testimonial cite { font-size: 1.4rem; }
-}
-
-@media (max-width: 480px) {
-    .logo { font-size: 2rem; }
-    .banner-text h2 { font-size: 3rem; }
-    .section-title { font-size: 2.5rem; }
-    .card-overlay h3 { font-size: 1.7rem; }
-    .testimonial blockquote { font-size: 1.7rem; }
-    .testimonial cite { font-size: 1.25rem; }
-}
-
-
-/* ===== FULL WEBSITE DESTORIA-STYLE FONT ===== */
-html, body, button, input, textarea, select,
-header, nav, main, section, footer, article, aside,
-.logo, nav a, .banner-text, .banner-text h2, .banner-text .meta,
-.banner-tag, .section-header, .section-title, .section-sub,
-.gallery-card, .card-overlay, .card-overlay h3, .card-meta, .card-tag,
-.testimonial, .testimonial blockquote, .testimonial cite {
-    font-family: 'Allura', cursive;
-}
-
-/* Keep Font Awesome icons using their own icon font. */
-.fas, .far, .fab, [class^="fa-"], [class*=" fa-"] {
-    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
-}
-
-/* Slightly larger sizes so the handwritten font remains clear. */
-nav a {
-    font-size: 1.25rem;
-    letter-spacing: 0;
-    text-transform: none;
-}
-
-.banner-text .meta {
-    font-size: 1.25rem;
-    letter-spacing: 0;
-    text-transform: none;
-}
-
-.banner-tag {
-    font-size: 1.2rem;
-    letter-spacing: 0;
-    text-transform: none;
-}
-
 .section-sub {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
+    font-weight: 400;
     letter-spacing: 0;
+}
+
+.card-overlay h3 {
+    font-size: 2.25rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.05;
 }
 
 .card-overlay .card-meta {
     font-size: 1.15rem;
+    font-weight: 400;
     letter-spacing: 0;
     text-transform: none;
 }
 
 .card-overlay .card-tag {
     font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+.testimonial blockquote {
+    font-size: 2.7rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.testimonial cite {
+    font-size: 1.7rem;
+    font-weight: 400;
     letter-spacing: 0;
 }
 
 @media (max-width: 820px) {
-    nav a { font-size: 1.15rem; }
+    .logo { font-size: 2.3rem; }
+    nav a { font-size: 1.2rem; }
+    .banner-text h2 { font-size: 4rem; }
     .banner-text .meta { font-size: 1.1rem; }
-    .banner-tag { font-size: 1.05rem; }
+    .banner-tag { font-size: 1.1rem; }
+    .section-title { font-size: 3rem; }
     .section-sub { font-size: 1.15rem; }
+    .card-overlay h3 { font-size: 2rem; }
     .card-overlay .card-meta { font-size: 1.05rem; }
+    .testimonial blockquote { font-size: 2.1rem; }
+    .testimonial cite { font-size: 1.4rem; }
 }
 
 @media (max-width: 480px) {
+    .logo { font-size: 2.1rem; }
     nav a { font-size: 1.05rem; }
+    .banner-text h2 { font-size: 3.1rem; }
     .banner-text .meta { font-size: 1rem; }
     .banner-tag { font-size: 1rem; }
+    .section-title { font-size: 2.6rem; }
     .section-sub { font-size: 1.05rem; }
+    .card-overlay h3 { font-size: 1.75rem; }
     .card-overlay .card-meta { font-size: 1rem; }
+    .testimonial blockquote { font-size: 1.8rem; }
+    .testimonial cite { font-size: 1.25rem; }
 }
