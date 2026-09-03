@@ -14,12 +14,12 @@
 }
 
 :root {
-    --primary: #8b6df0;
-    --secondary: #a78bfa;
-    --bg: #f8f5f2;
-    --text: #2c2824;
-    --glass: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.4);
+  --primary: #B88A3B;
+  --secondary: #D8B878;
+  --bg: #F8F3EA;
+  --text: #2C2824;
+  --glass: rgba(255, 253, 248, 0.75);
+  --glass-border: rgba(184, 138, 59, 0.25);
 }
 
 body {
