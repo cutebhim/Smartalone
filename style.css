@@ -78,7 +78,7 @@ header {
 }
 
 .logo {
-    font-size: 3.8rem;
+    font-size: 3.5rem;
     font-weight: 300;
     letter-spacing: 4px;
     text-transform: uppercase;
@@ -552,7 +552,7 @@ nav a {
 }
 
 @media (max-width: 820px) {
-    .logo { font-size: 2.5rem; }
+    .logo { font-size: 3.5rem; }
     nav a { font-size: 1.2rem; }
     .banner-text h2 { font-size: 4rem; }
     .banner-text .meta { font-size: 1.1rem; }
@@ -566,7 +566,7 @@ nav a {
 }
 
 @media (max-width: 480px) {
-    .logo { font-size: 2.5rem; }
+    .logo { font-size: 3.5rem; }
     nav a { font-size: 1.05rem; }
     .banner-text h2 { font-size: 3.1rem; }
     .banner-text .meta { font-size: 1rem; }
@@ -577,4 +577,15 @@ nav a {
     .card-overlay .card-meta { font-size: 1rem; }
     .testimonial blockquote { font-size: 1.8rem; }
     .testimonial cite { font-size: 1.25rem; }
+}
+
+/* ===== LOGO FONT SIZE FIX =====
+   Change only --logo-size below to resize the Bhim Majhi logo.
+*/
+:root {
+    --logo-size: 2.7rem;
+}
+
+.logo {
+    font-size: var(--logo-size) !important;
 }
