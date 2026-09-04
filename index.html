@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Bhim Majhi</title>
 
     <link rel="icon" type="image/png" sizes="64x64" href="https://bhimmajhi.cc.cd/logo.png?v=999">
@@ -12,7 +15,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" id="mainStyle" href="style.css">
 </head>
 <body>
     <div class="glow-orb"></div>
@@ -109,5 +112,13 @@
     </div>
 
     <script type="module" src="app.js"></script>
+    <script>
+        // Auto-refresh CSS every time page loads
+        (function() {
+            const styleLink = document.getElementById('mainStyle');
+            const timestamp = new Date().getTime();
+            styleLink.href = 'style.css?t=' + timestamp;
+        })();
+    </script>
 </body>
 </html>
