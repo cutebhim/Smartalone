@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>रैन्डम जोक जनरेटर — हिन्दी</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Roboto, "Segoe UI", sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#f6f8fb; }
+    .card { background:#fff; padding:22px; border-radius:12px; box-shadow:0 6px 22px rgba(15,30,40,0.08); width:min(720px,92%); max-width:720px; }
+    h1 { margin:0 0 10px 0; font-size:20px; }
+    p { margin:10px 0; line-height:1.6; }
+    .joke-setup { font-weight:700; font-size:18px; color:#111; }
+    .joke-delivery { margin-top:8px; font-size:16px; color:#333; }
+    .controls { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    button { padding:10px 14px; border-radius:8px; border:0; cursor:pointer; background:#0b6efd; color:white; font-weight:700; }
+    button.secondary { background:#eef2ff; color:#0b6efd; border:1px solid rgba(11,110,253,0.12); }
+    .meta { color:#555; font-size:13px; margin-top:6px; display:block; }
+    .loading { opacity:0.6; }
+    select, label, input[type="checkbox"] { margin-top:8px; }
+    .error { color:#b00020; font-weight:700; margin-top:8px; }
+    .controls-right { margin-left:auto; display:flex; gap:8px; }
+    .small { font-size:13px; color:#444; }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-live="polite">
+    <h1>रैन्डम जोक जनरेटर</h1>
+
+    <div>
+      <label for="apiSelect" class="meta">API चुनें:</label>
+      <select id="apiSelect" aria-label="जोक API चुनें">
+        <option value="jokeapi">JokeAPI (वैरायटी)</option>
+        <option value="official">Official Joke API</option>
+        <option value="icanhaz">icanhazdadjoke</option>
+      </select>
+    </div>
+
+    <div style="margin-top:8px;">
+      <label style="display:inline-flex; align-items:center; gap:8px;">
+        <input id="translateChk" type="checkbox" checked>
+        <span class="small">हिंदी में अनुवाद करें (LibreTranslate)</span>
+      </label>
+    </div>
+
+    <div id="jokeArea" style="margin-top:14px;">
+      <p id="status" class="meta">“नई जोक” पर क्लिक करें।</p>
+    </div>
+
+    <div class="controls" style="margin-top:8px;">
+      <button id="newBtn">नई जोक</button>
+      <button id="copyBtn" class="secondary" disabled>कॉपी</button>
+      <button id="shareBtn" class="secondary" disabled>शेयर</button>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button id="origBtn" class="secondary" disabled>अंग्रेज़ी दिखाएँ</button>
+      </div>
+    </div>
+
+    <div id="error" class="error" style="display:none;"></div>
+  </main>
+
+  <script>
+    const newBtn = document.getElementById('newBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const origBtn = document.getElementById('origBtn');
+    const apiSelect = document.getElementById('apiSelect');
+    const jokeArea = document.getElementById('jokeArea');
+    const status = document.getElementById('status');
+    const errorEl = document.getElementById('error');
+    const translateChk = document.getElementById('translateChk');
+
+    let lastOriginalText = '';
+    let lastDisplayedText = '';
+
+    function renderJokeText(text, metaType='') {
+      errorEl.style.display = 'none';
+      jokeArea.innerHTML = '';
+      const p = document.createElement('p');
+      p.className = 'joke-delivery';
+      p.textContent = text;
+      jokeArea.appendChild(p);
+      status.textContent = metaType || 'लाइव जोक';
+    }
+
+    async function fetchFromJokeAPI() {
+      const url = 'https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API त्रुटि: ' + res.status);
+      const data = await res.json();
+      if (data.type === 'single') {
+        return {type:'single', text: data.joke, originalParts: [data.joke]};
+      } else {
+        const combined = data.setup + "\n\n" + data.delivery;
+        return {type:'twopart', text: combined, originalParts: [data.setup, data.delivery]};
+      }
+    }
+
+    async function fetchFromOfficialJokeAPI() {
+      const url = 'https://official-joke-api.appspot.com/random_joke';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API त्रुटि: ' + res.status);
+      const data = await res.json(); // {setup, punchline}
+      const combined = data.setup + "\n\n" + data.punchline;
+      return {type:'twopart', text: combined, originalParts: [data.setup, data.punchline]};
+    }
+
+    async function fetchFromIcanHaz() {
+      const url = 'https://icanhazdadjoke.com/';
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('API त्रुटि: ' + res.status);
+      const data = await res.json(); // {joke}
+      return {type:'single', text: data.joke, originalParts: [data.joke]};
+    }
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        newBtn.disabled = true;
+        newBtn.textContent = 'लोड हो रहा है...';
+        jokeArea.classList.add('loading');
+        copyBtn.disabled = true;
+        shareBtn.disabled = true;
+        origBtn.disabled = true;
+      } else {
+        newBtn.disabled = false;
+        newBtn.textContent = 'नई जोक';
+        jokeArea.classList.remove('loading');
+      }
+    }
+
+    async function translateToHindi(text) {
+      // Uses public LibreTranslate instance. May fail (rate-limit/CORS) — fallback to original.
+      try {
+        const res = await fetch('https://libretranslate.de/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q: text, source: 'en', target: 'hi', format: 'text' })
+        });
+        if (!res.ok) throw new Error('अनुवाद API त्रुटि: ' + res.status);
+        const j = await res.json();
+        return j.translatedText || j.result || j.translation || text;
+      } catch (e) {
+        console.warn('Translate failed:', e);
+        throw e;
+      }
+    }
+
+    async function getJoke() {
+      setLoading(true);
+      errorEl.style.display = 'none';
+      lastOriginalText = '';
+      lastDisplayedText = '';
+      try {
+        let fetched;
+        const api = apiSelect.value;
+        if (api === 'jokeapi') fetched = await fetchFromJokeAPI();
+        else if (api === 'official') fetched = await fetchFromOfficialJokeAPI();
+        else fetched = await fetchFromIcanHaz();
+
+        const originalText = Array.isArray(fetched.originalParts) ? fetched.originalParts.join('\n\n') : fetched.text;
+        lastOriginalText = originalText;
+
+        if (translateChk.checked) {
+          status.textContent = 'अनुवाद हो रहा है…';
+          try {
+            const translated = await translateToHindi(originalText);
+            lastDisplayedText = translated;
+            renderJokeText(translated, 'हिन्दी');
+          } catch {
+            lastDisplayedText = originalText;
+            renderJokeText(originalText, 'अंग्रेज़ी (अनुवाद असफल)');
+            errorEl.style.display = 'block';
+            errorEl.textContent = 'अनुवाद उपलब्ध नहीं — मूल अंग्रेज़ी जोक दिखाया गया।';
+          }
+        } else {
+          lastDisplayedText = originalText;
+          renderJokeText(originalText, 'अंग्रेजी');
+        }
+
+        copyBtn.disabled = false;
+        shareBtn.disabled = false;
+        origBtn.disabled = lastOriginalText === '' || lastOriginalText === lastDisplayedText;
+      } catch (err) {
+        errorEl.style.display = 'block';
+        errorEl.textContent = 'जोक लाने में समस्या: ' + err.message;
+        status.textContent = 'त्रुटि';
+        jokeArea.innerHTML = '';
+        copyBtn.disabled = true;
+        shareBtn.disabled = true;
+        origBtn.disabled = true;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    newBtn.addEventListener('click', getJoke);
+
+    copyBtn.addEventListener('click', async () => {
+      const text = lastDisplayedText || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = 'कॉपी हो गया ✓';
+        setTimeout(() => copyBtn.textContent = 'कॉपी', 1200);
+      } catch {
+        copyBtn.textContent = 'कॉपी असफल';
+        setTimeout(() => copyBtn.textContent = 'कॉपी', 1200);
+      }
+    });
+
+    shareBtn.addEventListener('click', async () => {
+      const text = lastDisplayedText || '';
+      if (navigator.share) {
+        try {
+          await navigator.share({ text, title: 'मज़ेदार जोक' });
+        } catch {
+          // cancelled
+        }
+      } else {
+        window.open('mailto:?subject=मज़ेदार जोक&body=' + encodeURIComponent(text));
+      }
+    });
+
+    origBtn.addEventListener('click', () => {
+      if (!lastOriginalText) return;
+      renderJokeText(lastOriginalText, 'मूल अंग्रेज़ी');
+      origBtn.disabled = true;
+    });
+
+    // Load one joke on open
+    getJoke();
+  </script>
+</body>
+</html>
