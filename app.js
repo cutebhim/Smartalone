@@ -69,3 +69,27 @@ onSnapshot(postsQuery, snapshot => {
 }, error => {
   console.error("Firebase posts error:", error);
 });
+
+// Auto-refresh page every 30 seconds to pick up CSS changes
+setInterval(() => {
+  // Reload all stylesheets with fresh timestamp
+  document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+    if (!link.href.includes('cdnjs') && !link.href.includes('fonts')) {
+      const href = link.href.split('?')[0];
+      link.href = href + '?t=' + new Date().getTime();
+    }
+  });
+}, 30000);
+
+// Force page refresh on visibility change (when user switches back to tab)
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    // User switched back to this tab - refresh all assets
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+      if (!link.href.includes('cdnjs') && !link.href.includes('fonts')) {
+        const href = link.href.split('?')[0];
+        link.href = href + '?t=' + new Date().getTime();
+      }
+    });
+  }
+});
