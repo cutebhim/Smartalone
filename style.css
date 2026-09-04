@@ -416,3 +416,4 @@ nav a:hover::before { width: 100%; }
 ::-webkit-scrollbar-track { background: #f0f9ff; }
 ::-webkit-scrollbar-thumb { background: #d5ccc4; border-radius: 20px; }
 ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
+
