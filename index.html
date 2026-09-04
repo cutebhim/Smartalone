@@ -8,6 +8,11 @@
     <meta http-equiv="Expires" content="0">
     <title>Bhim Majhi</title>
 
+    <!-- Preload critical assets -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="https://bhimmajhi.cc.cd/logo.png?v=999" as="image">
+    <link rel="preload" href="photo1.jpg" as="image">
+
     <link rel="icon" type="image/png" sizes="64x64" href="https://bhimmajhi.cc.cd/logo.png?v=999">
     <link rel="shortcut icon" type="image/png" href="https://bhimmajhi.cc.cd/logo.png?v=999">
     <link rel="apple-touch-icon" href="https://bhimmajhi.cc.cd/logo.png?v=999">
@@ -16,6 +21,42 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" id="mainStyle" href="style.css">
+    
+    <style>
+        /* Prevent layout shift during CSS load */
+        body {
+            background: #f0f9ff;
+            color: #0c2340;
+        }
+        .logo {
+            font-size: 1.9rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #0c2340;
+            min-height: 40px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0 20px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+        }
+        nav {
+            display: flex;
+            gap: 36px;
+            align-items: center;
+        }
+        nav a {
+            color: #7a726a;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+    </style>
 </head>
 <body>
     <div class="glow-orb"></div>
@@ -113,7 +154,7 @@
 
     <script type="module" src="app.js"></script>
     <script>
-        // Auto-refresh CSS every time page loads
+        // Add cache busting with timestamp on page load
         (function() {
             const styleLink = document.getElementById('mainStyle');
             const timestamp = new Date().getTime();
