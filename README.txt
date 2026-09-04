@@ -1,4 +1,7 @@
-# Bhim Majhi — Firebase Photo/Video Live System
+# Bhim Majhi — Smart Alone
+Official site: https://bhimmajhi.cc.cd/
+
+Bhim Majhi (Smart Alone) — फोटो/वीडियो लाइव गैलरी और एडिटोरियल। यह repo public वेबसाइट के लिए है; index.html लाइव गैलरी Firestore से रियल‑टाइम डेटा लाता है.
 
 Files:
 - index.html       = original website layout, unchanged visually
